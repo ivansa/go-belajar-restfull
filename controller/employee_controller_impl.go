@@ -11,7 +11,7 @@ import (
 )
 
 // EmployeeControllerImpl adalah implementasi dari EmployeeController
-func NewEmployeeController(service service.EmployeeService) EmployeeController {
+func NewEmployeeController(service service.EmployeeService) *EmployeeControllerImpl {
 	return &EmployeeControllerImpl{
 		Service: service,
 	}

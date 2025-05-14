@@ -4,13 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"github.com/go-playground/validator/v10"
+	"go-belajar-restfull/exception"
 	"go-belajar-restfull/helper"
 	"go-belajar-restfull/model/domain"
 	"go-belajar-restfull/model/dto"
 	"go-belajar-restfull/repository"
 )
 
-func NewEmployeeService(db *sql.DB, employeeRepository repository.EmployeeRepository, validate *validator.Validate) EmployeeService {
+func NewEmployeeService(db *sql.DB, employeeRepository repository.EmployeeRepository, validate *validator.Validate) *EmployeeServiceImpl {
 	return &EmployeeServiceImpl{
 		DB:                 db,
 		EmployeeRepository: employeeRepository,
@@ -48,7 +49,7 @@ func (e EmployeeServiceImpl) FindById(ctx context.Context, id int) dto.EmployeeR
 	defer helper.CommitOrRollback(tx)
 
 	employee, err := e.EmployeeRepository.FindById(ctx, tx, id)
-	helper.CheckError(err)
+	helper.CheckError(exception.NewNotFoundError(err.Error()))
 
 	return helper.EmployeeToResponse(employee)
 }
@@ -82,7 +83,7 @@ func (e EmployeeServiceImpl) Update(ctx context.Context, request dto.EmployeeCre
 	defer helper.CommitOrRollback(tx)
 
 	employee, err := e.EmployeeRepository.FindById(ctx, tx, id)
-	helper.CheckError(err)
+	helper.CheckError(exception.NewNotFoundError(err.Error()))
 
 	employee.Name = request.Name
 	employee.Position = request.Position
@@ -98,7 +99,7 @@ func (e EmployeeServiceImpl) Delete(ctx context.Context, id int) {
 	defer helper.CommitOrRollback(tx)
 
 	employee, err := e.EmployeeRepository.FindById(ctx, tx, id)
-	helper.CheckError(err)
+	helper.CheckError(exception.NewNotFoundError(err.Error()))
 
 	e.EmployeeRepository.Delete(ctx, tx, employee.Id)
 }

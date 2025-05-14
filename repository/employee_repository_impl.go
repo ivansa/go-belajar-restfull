@@ -8,7 +8,7 @@ import (
 	"go-belajar-restfull/model/domain"
 )
 
-func NewEmployeeRepository() EmployeeRepository {
+func NewEmployeeRepository() *EmployeeRepositoryImpl {
 	return &EmployeeRepositoryImpl{}
 }
 
@@ -37,8 +37,8 @@ func (e EmployeeRepositoryImpl) FindAll(ctx context.Context, tx *sql.Tx) []domai
 }
 
 func (e EmployeeRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, id int) (domain.Employee, error) {
-	sQL := "select id, name, position, email from m_employee where id = ?"
-	rows, err := tx.QueryContext(ctx, sQL, id)
+	SQL := "select id, name, position, email from m_employee where id = $1"
+	rows, err := tx.QueryContext(ctx, SQL, id)
 	helper.CheckError(err)
 
 	defer rows.Close()
@@ -54,6 +54,8 @@ func (e EmployeeRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, id int
 }
 
 func (e EmployeeRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, employee *domain.Employee) {
+	// for PostgreSQL using RETURNING id (untuk ambil id setelah insert)
+	// untuk PostgreSQL menggunakan query context untuk ambil balikan query
 	SQL := "insert into m_employee (name,position,email) values ($1,$2,$3) RETURNING id"
 	rows, err := tx.QueryContext(ctx, SQL, employee.Name, employee.Position, employee.Email)
 	helper.CheckError(err)
@@ -65,21 +67,21 @@ func (e EmployeeRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, employee *
 		helper.CheckError(err)
 	}
 
-	// for MySQL
+	// for MySQL untuk ambil id setelah insert
 	// id, err := result.LastInsertId()
 	// helper.CheckError(err)
 	// employee.Id = int(id)
 }
 
 func (e EmployeeRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, employee *domain.Employee, id int) {
-	SQL := "update m_employee set name = ?, position = ?, email = ? where id = ?"
+	SQL := "update m_employee set name = $1, position = $2, email = $3 where id = $4"
 	_, err := tx.ExecContext(ctx, SQL, employee.Name, employee.Position, employee.Email, id)
 	helper.CheckError(err)
 	employee.Id = id
 }
 
 func (e EmployeeRepositoryImpl) Delete(ctx context.Context, tx *sql.Tx, id int) {
-	sQL := "delete from m_employee where id = ?"
-	_, err := tx.ExecContext(ctx, sQL, id)
+	SQL := "delete from m_employee where id = $1"
+	_, err := tx.ExecContext(ctx, SQL, id)
 	helper.CheckError(err)
 }

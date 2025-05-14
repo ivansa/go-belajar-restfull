@@ -1,7 +1,10 @@
 package helper
 
-func CheckError(err error) {
+import "fmt"
+
+func CheckError(err any) {
 	if err != nil {
+		fmt.Println("Error:", err)
 		panic(err)
 	}
 }
